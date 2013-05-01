@@ -35,7 +35,6 @@ namespace JellySolver
                 for (int i = 0; i < 5; i++)
                 {
                     new Solver().Run();
-
                 }
                 System.Threading.Thread.Sleep(2000);
             }

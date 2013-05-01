@@ -46,18 +46,42 @@ namespace JellySolver
         public override string ToString()
         {
             // profiler -> too long
-            if (Equals(WallCell))
-                return "w";
-            else if (Equals(EmptyCell))
-                return "-";
-            else if (Equals(RedCell))
-                return "r";
-            else if (Equals(YellowCell))
-                return "y";
-            else if (Equals(GreenCell))
-                return "g";
+            //if (Equals(WallCell))
+            //    return "w";
+            //else if (Equals(EmptyCell))
+            //    return "-";
+            //else if (Equals(RedCell))
+            //    return "r";
+            //else if (Equals(YellowCell))
+            //    return "y";
+            //else if (Equals(GreenCell))
+            //    return "g";
 
-            throw new Exception("unknown " + Type.ToString() + " ; " + Color.ToString());
+            switch (Type)
+            {
+                case CellType.Wall:
+                    return "w";
+                case CellType.Empty:
+                    return "-";
+                case CellType.Jelly:
+                    {
+                        switch (Color)
+                        {
+                            case Color.Black:
+                                return "b";
+                            case Color.Red:
+                                return "r";
+                            case Color.Green:
+                                return "g";
+                            case Color.Yellow:
+                                return "y";
+                            default:
+                                throw new Exception("unknown " + Type.ToString() + " ; " + Color.ToString());
+                        }
+                    }
+                default:
+                    throw new Exception("unknown " + Type.ToString() + " ; " + Color.ToString());
+            }
         }
     }
 

@@ -36,7 +36,19 @@ namespace JellySolver
 
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
+            // profiler : too long
+            // return ToString().GetHashCode();
+
+            int hash = 0;
+
+            hash = (int)Color * 100000;
+
+            foreach (Position pos in Positions)
+            {
+                hash += pos.I * 1000 + pos.J;
+            }
+
+            return hash;
         }
 
         public override string ToString()
