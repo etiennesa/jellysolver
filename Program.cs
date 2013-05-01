@@ -31,11 +31,7 @@ namespace JellySolver
 
                 //Test();
 
-                // profiling
-                for (int i = 0; i < 5; i++)
-                {
-                    new Solver().Run();
-                }
+                new Solver().Run();
                 System.Threading.Thread.Sleep(2000);
             }
             finally

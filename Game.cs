@@ -11,6 +11,8 @@ namespace JellySolver
         private Cell[][] Cells;
         private Dictionary<Color, List<Jelly>> Jellys;
         public int Id;
+        private string _stringLevel;
+        private int _hashCodeLevel;
 
         public Game(Cell[][] cells)
             :this(cells, 0)
@@ -28,6 +30,12 @@ namespace JellySolver
         {
             Jellys = GetJellyCells();
             MergeJellys();
+        }
+
+        private void ResetHashAndString()
+        {
+            _hashCodeLevel = 0;
+            _stringLevel = null;
         }
 
         private Dictionary<Color, List<Jelly>> GetJellyCells()
@@ -63,6 +71,7 @@ namespace JellySolver
         {
             foreach (List<Jelly> jellys in Jellys.Values)
                 MergeJellys(jellys);
+            ResetHashAndString();
         }
 
         private void MergeJellys(List<Jelly> jellys)
@@ -219,6 +228,8 @@ namespace JellySolver
 
             // Merge jellys
             GetJellysAndMerge();
+
+            ResetHashAndString();
         }
 
         private void UpdateJelly(Jelly jelly, Jelly oldJelly)
@@ -249,6 +260,8 @@ namespace JellySolver
             }
             
             MergeJellys();
+
+            ResetHashAndString();
         }
 
         private bool TryMoveDown(Jelly jelly)
@@ -284,6 +297,8 @@ namespace JellySolver
             }
 
             // Don't apply gravity, don't merge
+
+            ResetHashAndString();
         }
 
         private void SetEmpty(Jelly jelly)
@@ -340,27 +355,20 @@ namespace JellySolver
 
         public bool Equals(Game other)
         {
-            if (Cells.Length != other.Cells.Length)
-                return false;
-
-            for (int j = 0; j < Cells.Length; j++)
-            {
-                if (Cells[j].Length != other.Cells[j].Length)
-                    return false;
-
-                for (int i = 0; i < Cells[j].Length; i++)
-                    if (!Cells[j][i].Equals(other.Cells[j][i]))
-                        return false;
-            }
-
-            return true;
+            return (ToString() == other.ToString());
         }
 
         public override int GetHashCode()
         {
-            // too long...
-            //return this.ToString().GetHashCode();
+            if (_hashCodeLevel == 0)
+            {
+                _hashCodeLevel = SetHashCode();
+            }
+            return _hashCodeLevel;
+        }
 
+        private int SetHashCode()
+        {
             int hash = 0;
 
             // combine the hash for the first cell of each jelly
@@ -381,6 +389,15 @@ namespace JellySolver
         }
 
         public override string ToString()
+        {
+            if (_stringLevel == null)
+            {
+                _stringLevel = SetString();
+            }
+            return _stringLevel;
+        }
+
+        private string SetString()
         {
             StringBuilder bld = new StringBuilder();
             foreach (Cell[] line in Cells)
