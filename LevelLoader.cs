@@ -20,7 +20,9 @@ namespace JellySolver
             //Level 4
             @"WWWWWWWWWWWWWW;W------------W;W-------r----W;W-------g----W;W-------w----W;W-g-r--------W;W-g-r------g-W;WWW-W------WWW;WWWWW-WWWWWWWW;WWWWWWWWWWWWWW;",
             //Level 5
-            @"WWWWWWWWWWWWWW;W------------W;W------------W;W------------W;Wrg---gg-----W;WWW-WWWW-WW--W;Wrg----------W;WWWWW--WW---WW;WWWWWW-WW--WWW;WWWWWWWWWWWWWW;"
+            @"WWWWWWWWWWWWWW;W------------W;W------------W;W------------W;Wrg---gg-----W;WWW-WWWW-WW--W;Wrg----------W;WWWWW--WW---WW;WWWWWW-WW--WWW;WWWWWWWWWWWWWW;",
+            //Level 6
+            @"WWWWWWWWWWWWWW;WWWWWWW------W;WWWWWWW-g----W;W-------WW---W;W-r---y------W;W-W-WWW-W-g--W;W---------W-yW;W-------r-WWWW;W---WWWWWWWWWW;WWWWWWWWWWWWWW;"
         };
 
         public List<Game> LoadLevels()
