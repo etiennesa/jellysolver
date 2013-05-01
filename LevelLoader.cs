@@ -26,9 +26,10 @@ namespace JellySolver
         public List<Game> LoadLevels()
         {
             List<Game> games = new List<Game>();
+            int gameNumber = 0;
 
             foreach (string[] strings in GetLevelStrings())
-                games.Add(CreateGameFromString(strings));
+                games.Add(CreateGameFromString(strings, gameNumber++));
 
             return games;
         }
@@ -47,12 +48,17 @@ namespace JellySolver
 
         public Game CreateGameFromString(string[] level)
         {
+            return CreateGameFromString(level, 0);
+        }
+
+        public Game CreateGameFromString(string[] level, int gameNumber)
+        {
             List<Cell[]> cells = new List<Cell[]>();
 
             foreach (string line in level)
                 cells.Add(CreateLineFromString(line));
 
-            return new Game(cells.ToArray());
+            return new Game(cells.ToArray(), gameNumber);
         }
 
         private Cell[] CreateLineFromString(string line)

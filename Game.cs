@@ -10,9 +10,16 @@ namespace JellySolver
     {
         private Cell[][] Cells;
         private Dictionary<Color, List<Jelly>> Jellys;
+        public int Id;
 
         public Game(Cell[][] cells)
+            :this(cells, 0)
         {
+        }
+
+        public Game(Cell[][] cells, int id)
+        {
+            Id = id;
             Cells = cells;
             GetJellysAndMerge();
         }
@@ -351,7 +358,21 @@ namespace JellySolver
 
         public override int GetHashCode()
         {
-            return this.ToString().GetHashCode();
+            // too long...
+            //return this.ToString().GetHashCode();
+
+            int hash = 0;
+
+            // combine the hash for the first cell of each jelly
+            foreach (List<Jelly> jellys in Jellys.Values)
+            {
+                foreach (Jelly jelly in jellys)
+                {
+                    hash ^= jelly.GetHashCode();
+                }
+            }
+
+            return hash;
         }
 
         public void Print()

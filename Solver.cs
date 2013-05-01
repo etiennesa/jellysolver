@@ -10,9 +10,15 @@ namespace JellySolver
     {
         public void Run()
         {
+            DateTime time;
+
             foreach (Game game in new LevelLoader().LoadLevels())
             {
+                time = DateTime.Now;
+
                 Solve(game);
+
+                GlobalConfig.Writer.WriteTimeLine("Game n°" + game.Id + " : " + DateTime.Now.Subtract(time).TotalSeconds + " s");
             }
         }
 

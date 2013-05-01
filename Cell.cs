@@ -45,6 +45,7 @@ namespace JellySolver
 
         public override string ToString()
         {
+            // profiler -> too long
             if (Equals(WallCell))
                 return "w";
             else if (Equals(EmptyCell))

@@ -9,17 +9,20 @@ namespace JellySolver
     class Writer
     {
         string filePath;
-        TextWriter tw;
+        TextWriter tw, twt;
 
         public Writer(string fileSuffix)
         {
             filePath = @"C:\Users\Titou\Desktop\JellySolver\Log\run_" + fileSuffix + ".txt";
             tw = File.CreateText(filePath);
+            filePath = @"C:\Users\Titou\Desktop\JellySolver\Log\runtime_" + fileSuffix + ".txt";
+            twt = File.CreateText(filePath);
         }
 
         public void Close()
         {
             tw.Close();
+            twt.Close();
         }
 
         public void WriteLine(string message)
@@ -32,6 +35,12 @@ namespace JellySolver
         {
             Console.Write(message);
             tw.Write(message);
+        }
+            
+        public void WriteTimeLine(string message)
+        {
+            Console.WriteLine(message);
+            twt.WriteLine(message);
         }
     }
 }

@@ -30,7 +30,13 @@ namespace JellySolver
                 GlobalConfig.Writer = new Writer(DateTime.Now.ToString("yyyyMMddHHmm"));
 
                 //Test();
-                new Solver().Run();
+
+                // profiling
+                for (int i = 0; i < 5; i++)
+                {
+                    new Solver().Run();
+
+                }
                 System.Threading.Thread.Sleep(2000);
             }
             finally
