@@ -48,6 +48,11 @@ namespace JellySolver
         {
             return I + ";" + J;
         }
+
+        public Position Clone()
+        {
+            return new Position(I, J);
+        }
     }
 
     public class T_Position

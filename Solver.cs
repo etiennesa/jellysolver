@@ -8,6 +8,9 @@ namespace JellySolver
 {
     class Solver
     {
+        int _totalGames;
+        int _numberOfMovesForSolution;
+
         public void Run()
         {
             DateTime time;
@@ -18,12 +21,17 @@ namespace JellySolver
 
                 Solve(game);
 
-                GlobalConfig.Writer.WriteTimeLine("Game n°" + game.Id + " : " + DateTime.Now.Subtract(time).TotalSeconds + " s");
+                GlobalConfig.Writer.WriteTimeLine(
+                    "Game n°" + game.Id + " : " + DateTime.Now.Subtract(time).TotalSeconds + "s"
+                    + " (" +_numberOfMovesForSolution + "/" + _totalGames + ")");
             }
         }
 
         public bool Solve(Game game)
         {
+            _totalGames = 0;
+            _numberOfMovesForSolution = 0;
+
             Game currentGame = null;
             Game previousGame = null;
             Queue<Game> gameToExamine = new Queue<Game>();
@@ -49,16 +57,15 @@ namespace JellySolver
                 {
                     if (!gamesWithFather.ContainsKey(move))
                     {
+                        //GlobalConfig.Writer.WriteLine(move.ToString());
+                        //GlobalConfig.Writer.WriteLine("");
                         gamesWithFather.Add(move, currentGame);
                         gameToExamine.Enqueue(move);
-                        //if (gamesWithFather.Count >= countToPrint)
-                        //{
-                        //    GlobalConfig.Writer.WriteLine(gamesWithFather.Count + " games tried");
-                        //    countToPrint *= 10;
-                        //}
                     }
                 }
             }
+
+            _totalGames = gamesWithFather.Count;
 
             if (currentGame.IsSolved())
             {
@@ -88,6 +95,7 @@ namespace JellySolver
             while (gamesWithFather.TryGetValue(currentGame, out currentGame) && currentGame != null);
 
             GlobalConfig.Writer.WriteLine(orderedGames.Count + " moves for solution");
+            _numberOfMovesForSolution = orderedGames.Count;
 
             foreach (Game game in orderedGames)
             {
@@ -107,35 +115,66 @@ namespace JellySolver
             LevelLoader loader = new LevelLoader();
             
             // Empty
-            Game game1 = loader.CreateGameFromString(new string[] { "www", "w-w", "www" });
+            Game game1 = loader.CreateGameFromString(new string[] 
+            { 
+                "W W W", 
+                "     ",
+                "W . W", 
+                "     ",
+                "W W W" 
+            });
             Debug.Assert(new Solver().Solve(game1));
 
             // one jelly
-            Game game2 = loader.CreateGameFromString(new string[] { "www", "wrw", "www" });
+            Game game2 = loader.CreateGameFromString(new string[] 
+            { 
+                "W W W", 
+                "     ",
+                "W r W", 
+                "     ",
+                "W W W" 
+            });
             Debug.Assert(new Solver().Solve(game2));
 
             // 2 jellys simple
-            Game game3 = loader.CreateGameFromString(new string[] { "wwwww", "wr-rw", "wwwww" });
+            Game game3 = loader.CreateGameFromString(new string[] 
+            { 
+                "W W W W W", 
+                "         ",
+                "W r . r W", 
+                "         ",
+                "W W W W W" 
+            });
             Debug.Assert(new Solver().Solve(game3));
             
             // gravity
-            Game game4 = loader.CreateGameFromString(new string[] { 
-                "wwwww", 
-                "wr--w", 
-                "ww--w", 
-                "w--rw", 
-                "wwwww" 
+            Game game4 = loader.CreateGameFromString(new string[] 
+            { 
+                "W W W W W", 
+                "         ",
+                "W r . . W", 
+                "         ",
+                "W W . . W", 
+                "         ",
+                "W . . r W", 
+                "         ",
+                "W W W W W" 
             });
             Debug.Assert(new Solver().Solve(game4));
 
             // push group of jellys
-            Game game5 = loader.CreateGameFromString(new string[] { 
-                "wwwww", 
-                "w-yww", 
-                "w-rgw", 
-                "wwgww",
-                "wwwww" 
-            });
+            Game game5 = loader.CreateGameFromString(new string[] 
+            {
+                "W W W W W", 
+                "         ",
+                "W . y W W", 
+                "         ",
+                "W . r g W", 
+                "         ",
+                "W W g W W", 
+                "         ",
+                "W W W W W" 
+            }); 
             Debug.Assert(new Solver().Solve(game5));
 
 

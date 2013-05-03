@@ -11,18 +11,21 @@ namespace JellySolver
         private Cell[][] Cells;
         private Dictionary<Color, List<Jelly>> Jellys;
         public int Id;
+        private Dictionary<Position, Position> Links;
+
         private string _stringLevel;
         private int _hashCodeLevel;
 
-        public Game(Cell[][] cells)
-            :this(cells, 0)
+        public Game(Cell[][] cells, Dictionary<Position, Position> links)
+            :this(cells, links, 0)
         {
         }
 
-        public Game(Cell[][] cells, int id)
+        public Game(Cell[][] cells, Dictionary<Position, Position> links, int id)
         {
             Id = id;
             Cells = cells;
+            Links = links;
             GetJellysAndMerge();
         }
 
@@ -69,8 +72,11 @@ namespace JellySolver
 
         private void MergeJellys()
         {
-            foreach (List<Jelly> jellys in Jellys.Values)
-                MergeJellys(jellys);
+            foreach (KeyValuePair<Color, List<Jelly>> kvpJellys in Jellys)
+            {
+                if (kvpJellys.Key != Color.Black)
+                    MergeJellys(kvpJellys.Value);
+            }
             ResetHashAndString();
         }
 
@@ -130,27 +136,71 @@ namespace JellySolver
         private Game TryMove(Jelly jelly, Direction moveDirection)
         {
             HashSet<Jelly> jellysToMove = new HashSet<Jelly>();
+            Dictionary<Position, Position> linksToMove = new Dictionary<Position, Position>();
 
-            if (CanMove(jelly, moveDirection, jellysToMove))
-                return GetGameWithJellyMove(jellysToMove, moveDirection);
+            if (CanMove(jelly, moveDirection, jellysToMove, linksToMove))
+                return GetGameWithJellyMove(jellysToMove, moveDirection, linksToMove);
 
             return null;
         }
 
-        private Game GetGameWithJellyMove(HashSet<Jelly> jellysToMove, Direction moveDirection)
+        private Game GetGameWithJellyMove(
+            HashSet<Jelly> jellysToMove, 
+            Direction moveDirection, 
+            Dictionary<Position, Position> linksToMove)
         {
             HashSet<Jelly> jellyClones = new HashSet<Jelly>();
             foreach (Jelly jelly in jellysToMove)
                 jellyClones.Add(jelly.Clone());
 
+            Dictionary<Position, Position> linksToMoveClone = new Dictionary<Position, Position>();
+            foreach (KeyValuePair<Position, Position> kvp in linksToMove)
+                linksToMoveClone.Add(kvp.Key.Clone(), kvp.Value.Clone());
+
             Game newGame = this.Clone();
-            newGame.MoveJellys(jellyClones, moveDirection);
+            newGame.MoveJellys(jellyClones, moveDirection, linksToMoveClone);
             return newGame;
         }
 
-        private bool CanMove(Jelly jelly, Direction moveDirection, HashSet<Jelly> neighbourJellys)
+        private bool CanMove(
+            Jelly jelly, 
+            Direction moveDirection, 
+            HashSet<Jelly> markedJellys, 
+            Dictionary<Position, Position> linksToMove)
         {
-            neighbourJellys.Add(jelly);
+            markedJellys.Add(jelly);
+
+            // Check for jelly links
+            foreach (Position pos in jelly.Positions)
+            {
+                Position linkedPosition;
+                if (Links.TryGetValue(pos, out linkedPosition))
+                {
+                    Cell linkedCell = GetCell(Links[pos]);
+                    switch (linkedCell.Type)
+                    {
+                        case CellType.Wall:
+                            return false;
+                        case CellType.Jelly:
+                            {
+                                Jelly neighbourJelly = GetJellyFromPosition(Links[pos]);
+                                if (!markedJellys.Contains(neighbourJelly)
+                                    && !CanMove(neighbourJelly, moveDirection, markedJellys, linksToMove))
+                                    return false;
+                            }
+                            break;
+                        default:
+                            throw new Exception("Cannot link between empty cell and a jelly");
+                    }
+                    if (!linksToMove.ContainsKey(pos))
+                        linksToMove.Add(pos, linkedPosition);
+                    if (!linksToMove.ContainsKey(linkedPosition))
+                        linksToMove.Add(linkedPosition, pos);
+                }
+            }
+
+            // Check that neighbour cells of the jelly allow the move :
+            // either its empty or its a jelly that can move
             Dictionary<Position, Cell> neighbourCells = GetNeighbourCells(jelly, moveDirection);
 
             foreach (KeyValuePair<Position, Cell> kvpCellPosition in neighbourCells)
@@ -162,23 +212,19 @@ namespace JellySolver
                     case CellType.Jelly:
                         {
                             Jelly neighbourJelly = GetJellyFromPosition(kvpCellPosition.Key);
-                            if (!neighbourJellys.Contains(neighbourJelly)
-                                && !CanMove(neighbourJelly, moveDirection, neighbourJellys))
+                            if (!markedJellys.Contains(neighbourJelly)
+                                && !CanMove(neighbourJelly, moveDirection, markedJellys, linksToMove))
                                 return false;
                         }
                         break;
                 }
             }
 
-            neighbourJellys.Add(jelly);
-
             return true;
         }
 
         private Dictionary<Position, Cell> GetNeighbourCells(Jelly jelly, Direction moveDirection)
         {
-            // Do a yield
-
             Dictionary<Position, Cell> neighbourCells = new Dictionary<Position, Cell>();
 
             foreach (Position pos in jelly.Positions)
@@ -203,7 +249,10 @@ namespace JellySolver
             throw new Exception("Cannot find Jelly at " + position);
         }
 
-        private void MoveJellys(HashSet<Jelly> jellysToMove, Direction moveDirection)
+        private void MoveJellys(
+            HashSet<Jelly> jellysToMove, 
+            Direction moveDirection, 
+            Dictionary<Position, Position> linksToMove)
         {
             Dictionary<Jelly, Jelly> newOldJellys = new Dictionary<Jelly, Jelly>();
 
@@ -221,6 +270,16 @@ namespace JellySolver
             {
                 SetJelly(jellys.Key);
                 UpdateJelly(jellys.Key, jellys.Value);
+            }
+
+            // Move links
+            foreach (KeyValuePair<Position, Position> kvp in linksToMove)
+            {
+                Links.Remove(kvp.Key);
+            }
+            foreach (KeyValuePair<Position, Position> kvp in linksToMove)
+            {
+                Links.Add(kvp.Key.GetPosition(moveDirection), kvp.Value.GetPosition(moveDirection));
             }
 
             // Apply Gravity
@@ -267,16 +326,17 @@ namespace JellySolver
         private bool TryMoveDown(Jelly jelly)
         {
             HashSet<Jelly> jellysToMove = new HashSet<Jelly>();
+            Dictionary<Position, Position> linksToMove = new Dictionary<Position, Position>();
 
-            if (CanMove(jelly, Direction.DownMove, jellysToMove))
+            if (CanMove(jelly, Direction.DownMove, jellysToMove, linksToMove))
             {
-                MoveDown(jellysToMove);
+                MoveDown(jellysToMove, linksToMove);
                 return true;
             }
             return false;
         }
 
-        private void MoveDown(HashSet<Jelly> jellysToMove)
+        private void MoveDown(HashSet<Jelly> jellysToMove, Dictionary<Position, Position> linksToMove)
         {
             Dictionary<Jelly, Jelly> newOldJellys = new Dictionary<Jelly, Jelly>();
 
@@ -294,6 +354,13 @@ namespace JellySolver
             {
                 SetJelly(jellys.Key);
                 UpdateJelly(jellys.Key, jellys.Value);
+            }
+
+            // Move links
+            foreach (KeyValuePair<Position, Position> kvp in linksToMove)
+            {
+                Links.Remove(kvp.Key);
+                Links.Add(kvp.Key.GetPosition(Direction.DownMove), kvp.Value.GetPosition(Direction.DownMove));
             }
 
             // Don't apply gravity, don't merge
@@ -322,7 +389,7 @@ namespace JellySolver
             return Cells[pos.J][pos.I];
         }
 
-        private Game Clone()
+        public Game Clone()
         {
             Cell[][] cells = new Cell[Cells.Length][];
 
@@ -334,15 +401,20 @@ namespace JellySolver
                     cells[j][i] = Cells[j][i].Clone();
             }
 
-            return new Game(cells);
+            Dictionary<Position, Position> links = new Dictionary<Position, Position>(Links.Count);
+
+            foreach (KeyValuePair<Position, Position> kvp in Links)
+                links.Add(kvp.Key.Clone(), kvp.Value.Clone());
+
+            return new Game(cells, links, Id);
         }
 
         public bool IsSolved()
         {
-            // Check there is only one jelly of each color
-            foreach (List<Jelly> jelly in Jellys.Values)
+            // Check there is only one jelly of each color except black
+            foreach (KeyValuePair<Color, List<Jelly>> kvpJelly in Jellys)
             {
-                if (jelly.Count > 1)
+                if ((kvpJelly.Key != Color.Black) && (kvpJelly.Value.Count > 1))
                     return false;
             }
             return true;
@@ -380,6 +452,10 @@ namespace JellySolver
                 }
             }
 
+            // Combine the has for links
+            foreach (KeyValuePair<Position, Position> kvp in Links)
+                hash ^= kvp.Key.GetHashCode() * 27 + kvp.Value.GetHashCode();
+
             return hash;
         }
 
@@ -407,57 +483,6 @@ namespace JellySolver
                 bld.AppendLine();
             }
             return bld.ToString();
-        }
-    }
-
-    public class T_Game
-    {
-        public void Run()
-        {
-            GlobalConfig.Writer.Write("Testing T_Position...");
-
-            LevelLoader loader = new LevelLoader();
-            Game game1 = loader.CreateGameFromString(new string[]{"www","w-w","www"});
-            Game game2 = loader.CreateGameFromString(new string[]{"www","wrw","www"});
-            Game game3 = loader.CreateGameFromString(new string[] { "wwwww", "wr-rw", "wwwww" });
-            Game game4 = loader.CreateGameFromString(new string[] { "wwwww", "w-rrw", "wwwww" });
-            Game game5 = loader.CreateGameFromString(new string[] { "wwwww", "wrr-w", "wwwww" });
-            Game game6 = loader.CreateGameFromString(new string[] { "wwwww", "wr--w", "ww--w", "w---w", "wwwww" });
-            Game game7 = loader.CreateGameFromString(new string[] { "wwwww", "w---w", "ww--w", "w-r-w", "wwwww" });
-            Game game8 = loader.CreateGameFromString(new string[] { "wwww", "wr-w", "wwrw", "wwww" });
-            Game game9 = loader.CreateGameFromString(new string[] { "wwww", "w-rw", "wwrw", "wwww" });
-            Game game10 = loader.CreateGameFromString(new string[] { "wwww", "w-rgw", "wwwww" });
-            Game game11 = loader.CreateGameFromString(new string[] { "wwww", "wrg-w", "wwwww" });
-
-            // bool IsSolved()
-            Debug.Assert(game1.IsSolved());
-            Debug.Assert(game2.IsSolved());
-            Debug.Assert(!game3.IsSolved());
-
-            // List<Game> GetNextMoves()
-            List<Game> games = game1.GetNextMoves();
-            Debug.Assert(games.Count.Equals(0));
-            games = game2.GetNextMoves();
-            Debug.Assert(games.Count.Equals(0));
-            games = game3.GetNextMoves();
-            Debug.Assert(games.Count.Equals(2));
-            Debug.Assert(games.Contains(game4));
-            Debug.Assert(games.Contains(game5));
-            games = game6.GetNextMoves();
-            Debug.Assert(games.Count.Equals(1));
-            Debug.Assert(games.Contains(game7));
-            games = game8.GetNextMoves();
-            Debug.Assert(games.Count.Equals(1));
-            Debug.Assert(games.Contains(game9));
-            games = game10.GetNextMoves();
-            Debug.Assert(games.Count.Equals(2));
-            Debug.Assert(games.Contains(game11));
-
-            // override bool Equals(object obj)
-
-            // bool Equals(Game other)
-
-            GlobalConfig.Writer.WriteLine("finished");
         }
     }
 }
