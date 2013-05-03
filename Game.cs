@@ -119,15 +119,15 @@ namespace JellySolver
 
         private Game TryMoveRight(Jelly jelly)
         {
-            return TryMove(jelly, Move.RightMove);
+            return TryMove(jelly, Direction.RightMove);
         }
 
         private Game TryMoveLeft(Jelly jelly)
         {
-            return TryMove(jelly, Move.LeftMove);
+            return TryMove(jelly, Direction.LeftMove);
         }
 
-        private Game TryMove(Jelly jelly, Move moveDirection)
+        private Game TryMove(Jelly jelly, Direction moveDirection)
         {
             HashSet<Jelly> jellysToMove = new HashSet<Jelly>();
 
@@ -137,7 +137,7 @@ namespace JellySolver
             return null;
         }
 
-        private Game GetGameWithJellyMove(HashSet<Jelly> jellysToMove, Move moveDirection)
+        private Game GetGameWithJellyMove(HashSet<Jelly> jellysToMove, Direction moveDirection)
         {
             HashSet<Jelly> jellyClones = new HashSet<Jelly>();
             foreach (Jelly jelly in jellysToMove)
@@ -148,7 +148,7 @@ namespace JellySolver
             return newGame;
         }
 
-        private bool CanMove(Jelly jelly, Move moveDirection, HashSet<Jelly> neighbourJellys)
+        private bool CanMove(Jelly jelly, Direction moveDirection, HashSet<Jelly> neighbourJellys)
         {
             neighbourJellys.Add(jelly);
             Dictionary<Position, Cell> neighbourCells = GetNeighbourCells(jelly, moveDirection);
@@ -175,7 +175,7 @@ namespace JellySolver
             return true;
         }
 
-        private Dictionary<Position, Cell> GetNeighbourCells(Jelly jelly, Move moveDirection)
+        private Dictionary<Position, Cell> GetNeighbourCells(Jelly jelly, Direction moveDirection)
         {
             // Do a yield
 
@@ -203,7 +203,7 @@ namespace JellySolver
             throw new Exception("Cannot find Jelly at " + position);
         }
 
-        private void MoveJellys(HashSet<Jelly> jellysToMove, Move moveDirection)
+        private void MoveJellys(HashSet<Jelly> jellysToMove, Direction moveDirection)
         {
             Dictionary<Jelly, Jelly> newOldJellys = new Dictionary<Jelly, Jelly>();
 
@@ -268,7 +268,7 @@ namespace JellySolver
         {
             HashSet<Jelly> jellysToMove = new HashSet<Jelly>();
 
-            if (CanMove(jelly, Move.DownMove, jellysToMove))
+            if (CanMove(jelly, Direction.DownMove, jellysToMove))
             {
                 MoveDown(jellysToMove);
                 return true;
@@ -285,7 +285,7 @@ namespace JellySolver
             {
                 SetEmpty(jelly);
                 Jelly oldJelly = jelly.Clone();
-                jelly.Move(Move.DownMove);
+                jelly.Move(Direction.DownMove);
                 newOldJellys.Add(jelly, oldJelly);
             }
 

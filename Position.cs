@@ -6,22 +6,6 @@ using System.Text;
 
 namespace JellySolver
 {
-    class Move
-    {
-        public int I { get; private set; }
-        public int J { get; private set; }
-
-        public Move(int i, int j)
-        {
-            I = i;
-            J = j;
-        }
-
-        public static Move LeftMove = new Move(-1, 0);
-        public static Move DownMove = new Move(0, 1);
-        public static Move RightMove = new Move(1, 0);
-    }
-
     struct Position
     {
         public int I { get; private set; }
@@ -40,7 +24,7 @@ namespace JellySolver
                 || (J == position.J && (I == position.I + 1 || I == position.I - 1)));
         }
 
-        public Position GetPosition(Move move)
+        public Position GetPosition(Direction move)
         {
             return new Position(I + move.I, J + move.J);
         }

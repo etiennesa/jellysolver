@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cell.cs" />
+    <Compile Include="Direction.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GlobalConfig.cs" />
     <Compile Include="Jelly.cs" />

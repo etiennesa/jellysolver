@@ -62,7 +62,7 @@ namespace JellySolver
             return bld.ToString();
         }
 
-        public void Move(Move move)
+        public void Move(Direction move)
         {
             HashSet<Position> poss = new HashSet<Position>();
 
@@ -140,11 +140,11 @@ namespace JellySolver
             Debug.Assert(!jelly0.Equals(jelly2));
 
             // Move
-            jelly1.Move(Move.LeftMove);
+            jelly1.Move(Direction.LeftMove);
             Debug.Assert(jelly1.Positions.Count.Equals(2));
             Debug.Assert(jelly1.Positions.Contains(new Position(2, 5)));
             Debug.Assert(jelly1.Positions.Contains(new Position(1, 7)));
-            jelly1.Move(Move.RightMove);
+            jelly1.Move(Direction.RightMove);
             Debug.Assert(jelly1.Positions.Count.Equals(2));
             Debug.Assert(jelly1.Positions.Contains(new Position(3, 5)));
             Debug.Assert(jelly1.Positions.Contains(new Position(2, 7)));
